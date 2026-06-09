@@ -26,12 +26,19 @@ class Location(Enum):
     MAGIC = "魔法屋"
 
 # 地图邻接关系
+# 地图结构：四个功能点形成环形，中间连接所有点
+# 商店和魔法屋对面（不直连），机械屋和铁匠铺对面（不直连）
+#        商店
+#       /  |  \
+#   机械屋  中间  铁匠铺
+#       \  |  /
+#        魔法屋
 ADJACENT_MAP: Dict[Location, List[Location]] = {
-    Location.CENTER: [Location.SHOP, Location.MACHINE, Location.IRON, Location.MAGIC],
-    Location.SHOP:    [Location.CENTER],
-    Location.MACHINE: [Location.CENTER],
-    Location.IRON:    [Location.CENTER],
-    Location.MAGIC:   [Location.CENTER],
+    Location.CENTER:  [Location.SHOP, Location.MACHINE, Location.IRON, Location.MAGIC],
+    Location.SHOP:    [Location.CENTER, Location.MACHINE, Location.IRON],
+    Location.MACHINE: [Location.CENTER, Location.SHOP, Location.MAGIC],
+    Location.IRON:    [Location.CENTER, Location.SHOP, Location.MAGIC],
+    Location.MAGIC:   [Location.CENTER, Location.MACHINE, Location.IRON],
 }
 
 class RPS(Enum):
@@ -313,18 +320,20 @@ def display_map(game: GameState):
         positions[p.location] += f"  [{p.name} {hp_str}{status}]"
 
     print(f"""
-                    {locs[Location.SHOP]}
-                    {positions[Location.SHOP]}
-                      |
-                      |
-    {locs[Location.MACHINE]} —— {locs[Location.CENTER]} —— {locs[Location.IRON]}
-    {positions[Location.MACHINE]}     {positions[Location.CENTER]}     {positions[Location.IRON]}
-                      |
-                      |
-                    {locs[Location.MAGIC]}
-                    {positions[Location.MAGIC]}
+                   {locs[Location.SHOP]}
+                   {positions[Location.SHOP]}
+                  / |  \\
+                 /  |   \\
+    {locs[Location.MACHINE]}  {locs[Location.CENTER]}  {locs[Location.IRON]}
+    {positions[Location.MACHINE]}  {positions[Location.CENTER]}  {positions[Location.IRON]}
+                 \\  |   /
+                  \\ |  /
+                   {locs[Location.MAGIC]}
+                   {positions[Location.MAGIC]}
     """)
-    print("=" * 60)
+    print("─" * 60)
+    print("路径：商店↔机械屋↔魔法屋↔铁匠铺↔商店 | 中间↔全部")
+    print("无法直达：商店↔魔法屋、机械屋↔铁匠铺")
 
 
 def display_player_status(p: Player):
